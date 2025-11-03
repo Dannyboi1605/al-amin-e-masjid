@@ -6,11 +6,12 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\DonationController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\FeedbackController;
 // Hapus: use Illuminate\Support\Facades\Http; 
 
-
+Route::get('/', function () { return view('welcome'); });
 // TUKAR: Letak route utama yang paling penting (Waktu Solat) di atas
-Route::get('/', [PrayerTimeController::class, 'index'])->name('prayer.index');
+Route::get('/prayerTimes', [PrayerTimeController::class, 'index'])->name('prayer.index');
 
 // Route Dashboard (standard Laravel)
 Route::get('/dashboard', function () {
@@ -44,3 +45,15 @@ Route::get('/donation/success', [DonationController::class, 'paymentSuccess'])->
 
 // 3. Webhook (Signal dari ToyyibPay Server)
 Route::post('/donation/callback', [DonationController::class, 'callback'])->name('donation.callback');
+
+Route::get('/feedback', [FeedbackController::class, 'create'])->name('feedback.create');
+Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
+
+// Route Admin untuk Feedback
+    Route::get('/admin/feedbacks', [FeedbackController::class, 'index'])->name('admin.feedbacks.index');
+    
+    // Kita juga akan buat route untuk tengok details / tukar status
+    Route::get('/admin/feedbacks/{feedback}', [FeedbackController::class, 'show'])->name('admin.feedbacks.show');
+    Route::get('/admin/feedbacks', [FeedbackController::class, 'index'])
+    ->middleware(['auth', 'admin']) // <-- TAMBAH SECURITY DI SINI
+    ->name('admin.feedbacks.index');
