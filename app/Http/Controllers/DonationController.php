@@ -11,6 +11,16 @@ use App\Mail\DonationReceipt;            // <-- Import Mailable
 
 class DonationController extends Controller
 {
+
+    public function index()
+{
+    // Ambil semua rekod derma dari database, susun dari yang terbaru masuk.
+    $donations = Donation::latest()->get();
+
+    return view('admin.donations.index', [
+        'donations' => $donations
+    ]);;
+}
     public function create()
     {
         return view('donations.create');
@@ -53,7 +63,9 @@ class DonationController extends Controller
         // 3. Hantar data ke ToyyibPay guna 'posmen' Http
         // Guna 'asForm()' sebab ToyyibPay terima data borang (bukan JSON)
         $response = Http::asForm()->post('https://dev.toyyibpay.com/index.php/api/createBill', $toyyibpayData);
-
+if ($response->failed()) {
+    dd('API Call Failed! Response Body:', $response->body());
+}
 // dd($response->body());
 
         // 4. Dapat response dari ToyyibPay
@@ -124,6 +136,11 @@ class DonationController extends Controller
         
         // ToyyibPay perlukan response "OK"
         return response('OK'); 
+    }
+
+    public function show(Donation $donation)
+    {
+        return view('admin.donations.show', compact('donation'));
     }
 }
 

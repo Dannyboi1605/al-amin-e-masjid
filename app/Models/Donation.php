@@ -19,4 +19,9 @@ class Donation extends Model
         'user_id',
         'transaction_id', // Ini untuk simpan BillCode dari ToyyibPay
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

@@ -10,6 +10,8 @@ class Feedback extends Model
 {
     use HasFactory;
 
+    protected $table = 'feedbacks';
+
     protected $fillable = [
         // ... (fillable properties anda) ...
         'message',

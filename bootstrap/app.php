@@ -10,11 +10,12 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias([
-        'admin' => \App\Http\Middleware\IsAdmin::class, // <-- TAMBAH INI
-        'auth' => \App\Http\Middleware\Authenticate::class,
-    })
+->withMiddleware(function (Middleware $middleware) { // Guna function tanpa type-hint void
+    $middleware->alias([
+        'admin' => \App\Http\Middleware\IsAdmin::class, 
+        'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
+    ]);
+})
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();

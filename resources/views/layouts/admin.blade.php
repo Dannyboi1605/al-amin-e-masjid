@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin - {{ config('app.name', 'Masjid Al-Amin') }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    
+    {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
+
+    <style>
+        body { margin: 0; font-family: sans-serif; background-color: #f8f9fa; }
+        .admin-sidebar { 
+            width: 250px; 
+            background-color: #343a40; 
+            color: white; 
+            min-height: 100vh; 
+            padding-top: 20px;
+        }
+        .admin-main { flex-grow: 1; padding: 30px; }
+        .admin-link { color: #adb5bd; text-decoration: none; display: block; padding: 8px 15px; }
+        .admin-link:hover { background-color: #495057; color: white; }
+    </style>
+</head>
+<body>
+
+    <header style="background-color: #007bff; color: white; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,.1);">
+        <h3 style="margin: 0;">Admin Panel Masjid FYP</h3>
+    </header>
+
+    <div style="display: flex;">
+        <aside class="admin-sidebar">
+            <h5 style="padding: 0 15px; color: #ced4da;">Menu Utama</h5>
+            <ul style="list-style: none; padding: 0;">
+                <li><a href="{{ route('admin.feedbacks.index') }}" class="admin-link">Feedbacks</a></li>
+                <li><a href="{{ route('admin.donations.index') }}" class="admin-link">Donations</a></li>
+                <hr style="border-color: #495057;">
+                <li><a href="{{ route('dashboard') }}" class="admin-link">Dashboard Utama</a></li>
+            </ul>
+        </aside>
+
+        <main class="admin-main">
+            @yield('content') {{-- <--- SEMUA KOD ADMIN VIEW AKAN DIPAPARKAN DI SINI --}}
+        </main>
+    </div>
+
+</body>
+</html>
