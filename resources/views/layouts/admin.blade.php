@@ -9,11 +9,19 @@
     {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
 
     <style>
-        body { margin: 0; font-family: sans-serif; background-color: #f8f9fa; }
+        body { margin: 0; font-family: sans-serif; background-color: #f8f9fa;
+        /* --- TAMBAH INI UNTUK TEST LQUID GLASS --- */
+        background-image: url('https://picsum.photos/1920/1080?random=2'); 
+        background-attachment: fixed; /* Penting untuk nampak blur */
+        background-size: cover;
+        /* --- END TEST STYLE --- */ }
         .admin-sidebar { 
             width: 250px; 
-            background-color: #343a40; 
-            color: white; 
+/* --- FIX: GLASSMORHPISM STYLE --- */
+        background-color: rgba(52, 58, 64, 0.85); /* Darker, 85% opacity */
+        backdrop-filter: blur(8px); /* Kunci untuk efek liquid glass */
+        -webkit-backdrop-filter: blur(8px); /* Safari support */
+        /* --- END FIX --- */
             min-height: 100vh; 
             padding-top: 20px;
         }
@@ -25,15 +33,20 @@
 <body>
 
     <header style="background-color: #007bff; color: white; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,.1);">
-        <h3 style="margin: 0;">Admin Panel Masjid FYP</h3>
+        <h3 style="margin: 0;">
+            <a href="{{ route('admin.dashboard') }}" style="color: white; text-decoration: none;">Admin Panel Al-Amin e-Masjid</a>
+        </h3>
     </header>
 
     <div style="display: flex;">
         <aside class="admin-sidebar">
             <h5 style="padding: 0 15px; color: #ced4da;">Menu Utama</h5>
             <ul style="list-style: none; padding: 0;">
+                <li><a href="{{ route('admin.dashboard') }}" class="admin-link">Dashboard</a></li>
+                <li><a href="{{ route('admin.users.index') }}" class="admin-link">Users</a></li>
                 <li><a href="{{ route('admin.feedbacks.index') }}" class="admin-link">Feedbacks</a></li>
                 <li><a href="{{ route('admin.donations.index') }}" class="admin-link">Donations</a></li>
+                <li><a href="{{ route('admin.announcements.index') }}" class="admin-link">Announcements</a></li>
                 <hr style="border-color: #495057;">
                 <li><a href="{{ route('dashboard') }}" class="admin-link">Dashboard Utama</a></li>
             </ul>

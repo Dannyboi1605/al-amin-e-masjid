@@ -25,6 +25,25 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
+    
+    // ************************************************************
+    // * FIX UTAMA: TAMBAH CHECK IS_ACTIVE SELEPAS AUTH BERJAYA *
+    // ************************************************************
+    $user = Auth::user(); 
+
+    if (!$user->is_active) {
+        // Jika user diban (is_active = 0), kita log out dia balik
+        Auth::logout();
+
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
+
+        // Bagi error message
+        return redirect('/login')->withErrors([
+            'email' => 'Akses ditolak. Akaun anda telah dibatalkan (Banned) oleh pihak pengurusan.'
+        ]);
+    }
 
         $request->session()->regenerate();
 

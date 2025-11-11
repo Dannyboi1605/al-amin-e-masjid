@@ -7,29 +7,24 @@ use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\FeedbackController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
+
 
 // ===================================
-// 1. PUBLIC ROUTES & HOMEPAGE (FIXED)
+// 1. PUBLIC ROUTES & HOMEPAGE
 // ===================================
 
-// 1. HOMEPAGE: Hanya return view 'welcome'
 Route::get('/', function () {
     return view('welcome');
 })->name('homepage');
 
-
-// 2. DEDICATED PRAYER TIMES PAGE: Menggunakan Controller yang sudah di-clean
 Route::get('/prayertimes', [PrayerTimeController::class, 'index'])->name('prayer.index');
 
-
-// Auth (Login, Register) - Default Laravel
 require __DIR__.'/auth.php';
 
-// Route Dashboard (Kekal protected, URL: /dashboard)
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
-
 
 // ===================================
 // 2. USER MODULES (PUBLIC ACCESS)
@@ -41,25 +36,24 @@ Route::post('/donation', [DonationController::class, 'store'])->name('donation.s
 Route::get('/donation/success', [DonationController::class, 'paymentSuccess'])->name('donation.success');
 Route::post('/donation/callback', [DonationController::class, 'callback'])->name('donation.callback');
 
-
 // --- MODUL FEEDBACK ---
 Route::get('/feedback', [FeedbackController::class, 'create'])->name('feedback.create');
 Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
 
+// --- MODUL PENGUMUMAN (PUBLIC) ---
+Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index.public');
+Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show.public');
 
 // ===================================
-// 3. PROTECTED ADMIN & USER ROUTES
+// 3. PROTECTED USER ROUTES
 // ===================================
 
 Route::middleware('auth')->group(function () {
-    // Standard User Routes (Profile)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // Resource Management (Events & Announcements)
+    
     Route::resource('events', EventController::class);
-    Route::resource('announcements', AnnouncementController::class);
 });
 
 
@@ -67,13 +61,20 @@ Route::middleware('auth')->group(function () {
 // 4. ADMIN PANEL (PROTECTED BY ROLE)
 // ===================================
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    // Admin dashboard (welcome page)
+    Route::get('/', function () {
+        return view('admin.dashboard');
+    })->name('dashboard');
     
     // --- ADMIN FEEDBACK VIEW ---
     Route::get('/feedbacks', [FeedbackController::class, 'index'])->name('feedbacks.index');
     Route::get('/feedbacks/{feedback}', [FeedbackController::class, 'show'])->name('feedbacks.show'); 
     
     // --- ADMIN DONATION VIEW ---
-    Route::get('/donations', [DonationController::class, 'index'])->name('donations.index'); // Senarai Derma
-    Route::get('/donations/{donation}', [DonationController::class, 'show'])->name('donations.show'); // Detail Derma
+    Route::get('/donations', [DonationController::class, 'index'])->name('donations.index'); 
+    Route::get('/donations/{donation}', [DonationController::class, 'show'])->name('donations.show');
 
+   Route::resource('announcements', AnnouncementController::class);
+
+   Route::resource('users', UserController::class);
 });

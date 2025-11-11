@@ -11,12 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('announcements', function (Blueprint $table) {
-            $table->id();
-            $table->string('title');
-            $table->longText('content');
-            $table->timestamps();
-            $table->foreignId('user_id')->constrained(); 
+        Schema::table('users', function (Blueprint $table) {
+            // is_active (boolean) untuk ban/unban user. Default: true (active)
+            $table->boolean('is_active')->default(true)->after('role');
         });
     }
 
@@ -25,6 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('announcements');
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('is_active');
+        });
     }
 };

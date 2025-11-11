@@ -29,7 +29,7 @@
         <div class="container-fluid container">
             
             <a class="navbar-brand" href="{{ route('homepage') }}">
-                <i class="fas fa-mosque me-2"></i>Masjid Al-Amin FYP
+                <i class="fas fa-mosque me-2"></i>Masjid Al-Amin Kampung Serigai Putatan
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,6 +41,8 @@
                     {{-- PUBLIC LINKS --}}
                     <li class="nav-item"><a class="nav-link" href="{{ route('homepage') }}">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ route('prayer.index') }}">Waktu Solat</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('announcements.index.public') }}">Pengumuman</a></li>
+                     
                 </ul>
 
                 {{-- KEY ACTIONS & AUTH (Kanan) --}}
@@ -65,7 +67,7 @@
                         {{-- ADMIN LINK (Hanya jika role=admin) --}}
                         @if (Auth::user()->role === 'admin')
                             <li class="nav-item me-3">
-                                <a class="nav-link text-warning fw-bold" href="{{ route('admin.feedbacks.index') }}">
+                                <a class="nav-link text-warning fw-bold" href="{{ route('admin.dashboard') }}">
                                     <i class="fas fa-user-shield"></i> ADMIN PANEL
                                 </a>
                             </li>
