@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Event;
+use Carbon\Carbon;
 
 class EventController extends Controller
 {
@@ -11,10 +12,24 @@ class EventController extends Controller
      * Display a listing of the resource.
      */
      
-    public function index()
+    public function index(Request $request)
     {
-        $events = Event::all();
-        return view('events.index', compact('events'));
+        // Allow filtering by `filter=upcoming|past`. Default => upcoming
+        $filter = $request->query('filter', 'upcoming');
+        $today = Carbon::now()->startOfDay();
+
+        if ($filter === 'past') {
+            $events = Event::where('date', '<', $today)
+                ->orderBy('date', 'desc')
+                ->get();
+        } else {
+            // upcoming (default)
+            $events = Event::where('date', '>=', $today)
+                ->orderBy('date', 'asc')
+                ->get();
+        }
+
+        return view('events.index', compact('events', 'filter'));
     }
 
     /**
@@ -50,9 +65,10 @@ class EventController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($id)
     {
-        //
+        $event = Event::findOrFail($id);
+        return view('events.show', compact('event'));
     }
 
     /**

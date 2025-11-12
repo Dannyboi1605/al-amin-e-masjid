@@ -44,6 +44,10 @@ Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.s
 Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index.public');
 Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show.public');
 
+// --- MODUL ACARA (PUBLIC) ---
+Route::get('/events', [EventController::class, 'index'])->name('events.index.public');
+Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show.public');
+
 // ===================================
 // 3. PROTECTED USER ROUTES
 // ===================================
@@ -53,7 +57,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
-    Route::resource('events', EventController::class);
+    // NOTE: user-scoped resource routes for events were removed to avoid
+    // colliding with the public events routes (which are named
+    // "events.index.public" / "events.show.public").
 });
 
 
@@ -77,4 +83,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
    Route::resource('announcements', AnnouncementController::class);
 
    Route::resource('users', UserController::class);
+
+    // Use admin-scoped controller for admin panel views
+    Route::resource('events', \App\Http\Controllers\Admin\EventController::class);
 });

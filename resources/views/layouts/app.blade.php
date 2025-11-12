@@ -42,6 +42,7 @@
                     <li class="nav-item"><a class="nav-link" href="{{ route('homepage') }}">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ route('prayer.index') }}">Waktu Solat</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ route('announcements.index.public') }}">Pengumuman</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('events.index.public') }}">Acara</a></li>
                      
                 </ul>
 
