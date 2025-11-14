@@ -4,33 +4,31 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Donation;
-use Illuminate\Support\Facades\Auth;    // <-- Import Auth
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Mail;    // <-- Import Mail
-use App\Mail\DonationReceipt;            // <-- Import Mailable
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\DonationReceipt;
+use Illuminate\Support\Facades\Http; // Kekalkan ini, walaupun tak guna untuk create bill, berguna untuk debugging
+use Illuminate\Support\Facades\Config; // Untuk ambil data dari .env
 
 class DonationController extends Controller
 {
-
+    // ADMIN LIST VIEW
     public function index()
-{
-    // Ambil semua rekod derma dari database, susun dari yang terbaru masuk.
-    $donations = Donation::latest()->get();
-
-    return view('admin.donations.index', [
-        'donations' => $donations
-    ]);;
-}
+    {
+        $donations = Donation::latest()->get();
+        return view('admin.donations.index', compact('donations'));
+    }
+    
+    // PUBLIC CREATE FORM
     public function create()
     {
         return view('donations.create');
     }
 
+    // HANDLE FORM SUBMISSION & REDIRECT TO BILLPLZ
     public function store(Request $request)
     {
-
-        // dd($request->all());
-        // Validate the incoming request data
+        // 1. Validation (Wajib ada field phone untuk Billplz/PayEx)
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
@@ -38,104 +36,89 @@ class DonationController extends Controller
             'phone' => 'required|string|max:20',
         ]);
 
+        // 2. Tentukan data backend & Amaun dalam sen
+        $user_id = Auth::check() ? Auth::id() : null;
+        $amountInCents = $validated['amount'] * 100; 
 
+        // 3. Simpan rekod PENDING dalam database sebelum redirect
+        // Kita gunakan ID kita sendiri sebagai rujukan utama untuk Billplz
+        $donation = Donation::create([
+            'donor_name' => $validated['name'],
+            'donor_email' => $validated['email'],
+            'amount' => $validated['amount'], 
+            'transaction_status' => 'pending', 
+            'user_id' => $user_id,
+            'payment_method' => 'billplz',
+            // 'transaction_id' dibiarkan NULL buat sementara, akan diisi oleh callback
+        ]);
 
-        // dd('Validation Berjaya!');
+        // 4. --- LOGIC BILLPLZ: Redirect untuk Create Bill ---
+        // Gantikan 'COLLECTION_ID_AWAK' dengan ID dari Billplz Staging
+        $collectionId = env('BILLPLZ_COLLECTION_ID', 'COLLECTION_ID_AWAK');
 
-        $toyyibpayData = [
-            'userSecretKey' => '2o5eozy1-xou1-4dvb-gd7e-x2uxh9u8hqin', // <-- GANTI NI
-            'categoryCode' => '1gz5fnuw',                        // <-- Kod Kategori awak
-            'billName' => 'Derma Masjid (FYP)',
-            'billDescription' => 'Derma ikhlas dari ' . $validated['name'],
-            'billPriceSetting' => 1, // 1 = Amaun tetap
-            'billPayorInfo' => 1,    // 1 = Wajibkan info user
-            'billAmount' => $validated['amount'] * 100, // <-- TUKAR KE SEN (RM50 = 5000)
-            'billTo' => $validated['name'],
-            'billEmail' => $validated['email'],
-            'billPaymentChannel' => '2', // 2 = FPX dan Kad Kredit
-            'billPhone' => $validated['phone'],
-            
-            // URL yang kita cipta dalam routes/web.php tadi
-            'billReturnUrl' => route('donation.success'),
-            'billCallbackUrl' => route('donation.callback'),
+        $billplzData = [
+            'collection_id' => $collectionId,
+            'description' => 'Derma Masjid Al-Amin - ' . $donation->id,
+            'email' => $validated['email'],
+            'mobile' => $validated['phone'],
+            'name' => $validated['name'],
+            'amount' => $amountInCents, // Wajib dalam sen
+            'callback_url' => route('donation.callback'), // URL untuk webhook/signal
+            'redirect_url' => route('donation.success'), // URL untuk user patah balik
+            'reference_1_label' => 'Donation ID',
+            'reference_1' => $donation->id, // ID kita sendiri sebagai rujukan
+            'currency' => 'MYR',
         ];
+        
+        // 5. Build URL Billplz
+        // Billplz menggunakan URL 'https://www.billplz.com/payments/new' untuk initiate bill
+        $queryString = http_build_query($billplzData);
+        $paymentUrl = 'https://www.billplz.com/payments/new?' . $queryString;
 
-        // 3. Hantar data ke ToyyibPay guna 'posmen' Http
-        // Guna 'asForm()' sebab ToyyibPay terima data borang (bukan JSON)
-        $response = Http::asForm()->post('https://dev.toyyibpay.com/index.php/api/createBill', $toyyibpayData);
-if ($response->failed()) {
-    dd('API Call Failed! Response Body:', $response->body());
-}
-// dd($response->body());
-
-        // 4. Dapat response dari ToyyibPay
-        $billData = $response->json(); // cth: [{"BillCode":"xoxox"}]
-
-        // 5. Semak jika ada error
-        if (isset($billData['BillCode'])) {
-            $billCode = $billData[0]['BillCode']; // <-- Ini BillCode kita
-
-            // 6. Simpan rekod derma dalam database kita
-            Donation::create([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'amount' => $validated['amount'], // Simpan amaun RM
-                'transaction_status' => 'pending', // Set 'pending' dulu
-                'user_id' => Auth::check() ? Auth::id() : null, // Simpan ID user kalau dia login
-                'payment_method' => 'toyyibpay',
-                'transaction_id' => $billCode, // Simpan BillCode sebagai rujukan
-            ]);
-
-            // 7. Redirect user ke page bayaran ToyyibPay
-            $paymentUrl = 'https://dev.toyyibpay.com/' . $billCode;
-            return redirect()->away($paymentUrl); // 'away()' untuk redirect ke URL luaran
-
-        } else {
-            // Kalau ToyyibPay bagi error
-            return redirect()->back()->with('error', 'Gagal mencipta bil. Sila cuba lagi.');
-        }
+        // 6. Redirect user ke page pembayaran Billplz
+        return redirect()->away($paymentUrl);
     }
 
     /**
-     * Page 'Terima Kasih' (bila user patah balik)
+     * Page 'Terima Kasih' (redirect_url dari Billplz).
      */
     public function paymentSuccess(Request $request)
     {
-        // Kat sini kita cuma tunjuk 'Terima kasih'
-        // 'status_id' (3) bermaksud 'pending'. Kita tak boleh sahkan kat sini
-        return view('donations.success'); // Kena cipta fail view ni
+        // Billplz akan hantar status, tapi kita tak boleh percaya status di sini untuk security.
+        // Kita hanya tunjuk terima kasih dan semak DB untuk status sebenar.
+        return view('donations.success'); 
     }
 
     /**
-     * Webhook (bila server ToyyibPay hantar signal)
+     * Webhook (Billplz hantar signal - Callback URL).
      */
     public function callback(Request $request)
     {
-        $secretKey = '2o5eozy1-xou1-4dvb-gd7e-x2uxh9u8hqin';
-        // Ini adalah 'signal' rahsia dari ToyyibPay
-        $billCode = $request->input('billcode');
-        $status = $request->input('status'); // 1 = Berjaya, 2 = Pending, 3 = Gagal
+        // Ini adalah 'signal' rahsia dari Billplz
+        
+        // 1. Ambil data dari Billplz (gunakan key 'billplz[...]' untuk webhook)
+        $billplzId = $request->input('billplz_id');
+        $billplzPaid = $request->input('billplz_paid'); // 'true' atau 'false'
+        $ourDonationId = $request->input('billplz_reference_1'); // ID Donasi kita sendiri
+        
+        // 2. Cari rekod derma kita
+        $donation = Donation::find($ourDonationId);
 
-        // 1. Cari derma dalam database kita guna billCode
-        $donation = Donation::where('transaction_id', $billCode)->first();
+        // 3. Semak jika bayaran berjaya (paid='true') dan status masih pending
+        if ($donation && $billplzPaid === 'true' && $donation->transaction_status === 'pending') {
+            
+            // 4. Update status & rekod Billplz ID
+            $donation->transaction_status = 'completed';
+            $donation->transaction_id = $billplzId; // Simpan Billplz ID/Ref
+            $donation->receipt_number = 'MSJ-BP-' . $donation->id; // Guna prefix BP untuk Billplz
+            $donation->save();
 
-        if ($donation) {
-            // 2. Semak jika bayaran berjaya
-            if ($status == '1' && $donation->transaction_status == 'pending') {
-                
-                // 3. Update status ke 'completed'
-                $donation->transaction_status = 'completed';
-                $donation->receipt_number = 'MSJ-FYP-' . $donation->id; // Auto-generate resit
-                $donation->save();
-
-                // 4. TODO: Hantar emel resit kepada $donation->donor_email
-                // (Ini kita boleh buat kemudian)
-                Mail::to($donation->donor_email)->send(new DonationReceipt($donation));
-            }
+            // 5. Hantar emel resit
+            Mail::to($donation->donor_email)->send(new DonationReceipt($donation)); 
         }
         
-        // ToyyibPay perlukan response "OK"
-        return response('OK'); 
+        // Billplz perlukan response 200 OK untuk mengesahkan penerimaan webhook
+        return response('Billplz OK', 200); 
     }
 
     public function show(Donation $donation)
@@ -143,8 +126,3 @@ if ($response->failed()) {
         return view('admin.donations.show', compact('donation'));
     }
 }
-
-
-    
-
-

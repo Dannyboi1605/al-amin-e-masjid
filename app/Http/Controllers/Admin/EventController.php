@@ -29,9 +29,13 @@ class EventController extends Controller
             'description' => 'required|string',
             'date' => 'required|date',
             'location' => 'required|string|max:255',
+            'allow_volunteers' => 'boolean',
         ]);
 
         $data['user_id'] = auth()->id();
+
+        // Ensure checkbox value present
+        $data['allow_volunteers'] = isset($data['allow_volunteers']) ? (bool)$data['allow_volunteers'] : false;
 
         Event::create($data);
 
@@ -45,6 +49,13 @@ class EventController extends Controller
         return view('admin.events.edit', compact('event'));
     }
 
+    /** Display the specified event (admin view). */
+    public function show($id)
+    {
+        $event = Event::findOrFail($id);
+        return view('admin.events.show', compact('event'));
+    }
+
     /** Update event. */
     public function update(Request $request, $id)
     {
@@ -53,9 +64,11 @@ class EventController extends Controller
             'description' => 'required|string',
             'date' => 'required|date',
             'location' => 'required|string|max:255',
+            'allow_volunteers' => 'boolean',
         ]);
 
         $event = Event::findOrFail($id);
+        $data['allow_volunteers'] = isset($data['allow_volunteers']) ? (bool)$data['allow_volunteers'] : false;
         $event->update($data);
 
         return redirect()->route('admin.events.index')->with('success', 'Event updated successfully.');

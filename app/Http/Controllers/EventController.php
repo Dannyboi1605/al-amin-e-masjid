@@ -18,18 +18,42 @@ class EventController extends Controller
         $filter = $request->query('filter', 'upcoming');
         $today = Carbon::now()->startOfDay();
 
+        // Sorting
+        $sort = $request->query('sort'); // date_asc,date_desc,title_asc,title_desc,newest,oldest
+
+        $query = Event::query();
+
         if ($filter === 'past') {
-            $events = Event::where('date', '<', $today)
-                ->orderBy('date', 'desc')
-                ->get();
+            $query->where('date', '<', $today);
+        } elseif ($filter === 'upcoming') {
+            $query->where('date', '>=', $today);
+        } // if 'all' -> no where clause
+
+        // Apply sorting
+        if ($sort === 'date_asc') {
+            $query->orderBy('date', 'asc');
+        } elseif ($sort === 'date_desc') {
+            $query->orderBy('date', 'desc');
+        } elseif ($sort === 'title_asc') {
+            $query->orderBy('title', 'asc');
+        } elseif ($sort === 'title_desc') {
+            $query->orderBy('title', 'desc');
+        } elseif ($sort === 'newest') {
+            $query->orderBy('created_at', 'desc');
+        } elseif ($sort === 'oldest') {
+            $query->orderBy('created_at', 'asc');
         } else {
-            // upcoming (default)
-            $events = Event::where('date', '>=', $today)
-                ->orderBy('date', 'asc')
-                ->get();
+            // Default sorting: for modern sites, upcoming sorted by nearest date first.
+            if ($filter === 'past') {
+                $query->orderBy('date', 'desc');
+            } else {
+                $query->orderBy('date', 'asc');
+            }
         }
 
-        return view('events.index', compact('events', 'filter'));
+        $events = $query->get();
+
+        return view('events.index', compact('events', 'filter', 'sort'));
     }
 
     /**

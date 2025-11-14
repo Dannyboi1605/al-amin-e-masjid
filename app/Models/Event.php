@@ -14,11 +14,13 @@ class Event extends Model
         'date',
         'location',
         'user_id',
+        'allow_volunteers',
     ];
 
     // Cast the date field to a Carbon instance
     protected $casts = [
         'date' => 'date',
+        'allow_volunteers' => 'boolean',
     ];
 
     /**
@@ -27,5 +29,10 @@ class Event extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function volunteers()
+    {
+        return $this->hasMany(\App\Models\Volunteer::class);
     }
 }

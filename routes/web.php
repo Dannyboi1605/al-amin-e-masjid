@@ -6,8 +6,11 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\AboutController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VolunteerController;
+use App\Http\Controllers\Admin\VolunteerController as AdminVolunteerController;
 
 
 // ===================================
@@ -21,10 +24,6 @@ Route::get('/', function () {
 Route::get('/prayertimes', [PrayerTimeController::class, 'index'])->name('prayer.index');
 
 require __DIR__.'/auth.php';
-
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
 
 // ===================================
 // 2. USER MODULES (PUBLIC ACCESS)
@@ -48,6 +47,9 @@ Route::get('/announcements/{announcement}', [AnnouncementController::class, 'sho
 Route::get('/events', [EventController::class, 'index'])->name('events.index.public');
 Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show.public');
 
+// --- MODUL ABOUT US (PUBLIC) ---
+Route::get('/about', [AboutController::class, 'index'])->name('about.index');
+
 // ===================================
 // 3. PROTECTED USER ROUTES
 // ===================================
@@ -56,6 +58,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // Volunteer application routes (only for authenticated users)
+    Route::get('/events/{event}/volunteer', [VolunteerController::class, 'create'])->name('events.volunteer.create');
+    Route::post('/events/{event}/volunteer', [VolunteerController::class, 'store'])->name('events.volunteer.store');
     
     // NOTE: user-scoped resource routes for events were removed to avoid
     // colliding with the public events routes (which are named
@@ -83,6 +89,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
    Route::resource('announcements', AnnouncementController::class);
 
    Route::resource('users', UserController::class);
+
+    // Admin volunteer management
+    Route::get('/volunteers', [AdminVolunteerController::class, 'index'])->name('volunteers.index');
+    Route::get('/volunteers/{volunteer}', [AdminVolunteerController::class, 'show'])->name('volunteers.show');
+    Route::post('/volunteers/{volunteer}/accept', [AdminVolunteerController::class, 'accept'])->name('volunteers.accept');
+    Route::post('/volunteers/{volunteer}/reject', [AdminVolunteerController::class, 'reject'])->name('volunteers.reject');
+
+    // Admin About Us Management
+    Route::resource('about', \App\Http\Controllers\Admin\AboutController::class)->except(['show']);
 
     // Use admin-scoped controller for admin panel views
     Route::resource('events', \App\Http\Controllers\Admin\EventController::class);

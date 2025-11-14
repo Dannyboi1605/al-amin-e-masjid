@@ -11,8 +11,8 @@
     <style>
         body { margin: 0; font-family: sans-serif; background-color: #f8f9fa;
         /* --- TAMBAH INI UNTUK TEST LQUID GLASS --- */
-        background-image: url('https://picsum.photos/1920/1080?random=2'); 
-        background-attachment: fixed; /* Penting untuk nampak blur */
+        /* background-image: url('https://picsum.photos/1920/1080?random=2'); 
+        background-attachment: fixed; Penting untuk nampak blur */
         background-size: cover;
         /* --- END TEST STYLE --- */ }
         .admin-sidebar { 
@@ -48,8 +48,10 @@
                 <li><a href="{{ route('admin.donations.index') }}" class="admin-link">Donations</a></li>
                 <li><a href="{{ route('admin.announcements.index') }}" class="admin-link">Announcements</a></li>
                 <li><a href="{{ route('admin.events.index') }}" class="admin-link">Events</a></li>
+                <li><a href="{{ route('admin.volunteers.index') }}" class="admin-link">Volunteers</a></li>
+                <li><a href="{{ route('admin.about.index') }}" class="admin-link">About Us Management</a></li>
                 <hr style="border-color: #495057;">
-                <li><a href="{{ route('dashboard') }}" class="admin-link">Dashboard Utama</a></li>
+                <li><a href="{{ route('homepage') }}" class="admin-link">Dashboard Utama</a></li>
             </ul>
         </aside>
 

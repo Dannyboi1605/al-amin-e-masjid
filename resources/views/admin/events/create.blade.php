@@ -36,6 +36,11 @@
             <input type="text" id="location" name="location" value="{{ old('location') }}" class="form-control" required>
         </div>
 
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="allow_volunteers" name="allow_volunteers" value="1" {{ old('allow_volunteers') ? 'checked' : '' }}>
+            <label class="form-check-label" for="allow_volunteers">Allow volunteers</label>
+        </div>
+
         <button type="submit" class="btn btn-primary">Create Event</button>
     </form>
 </div>
