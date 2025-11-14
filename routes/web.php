@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VolunteerController;
 use App\Http\Controllers\Admin\VolunteerController as AdminVolunteerController;
+use App\Http\Controllers\ForumController;
+use App\Http\Controllers\AdminForumController;
+use App\Http\Controllers\CommentController;
 
 
 // ===================================
@@ -50,6 +53,10 @@ Route::get('/events/{event}', [EventController::class, 'show'])->name('events.sh
 // --- MODUL ABOUT US (PUBLIC) ---
 Route::get('/about', [AboutController::class, 'index'])->name('about.index');
 
+// --- MODUL FORUM (PUBLIC) ---
+Route::get('/forums', [ForumController::class, 'index'])->name('forums.index');
+Route::get('/forums/{forum}', [ForumController::class, 'show'])->name('forums.show');
+
 // ===================================
 // 3. PROTECTED USER ROUTES
 // ===================================
@@ -62,6 +69,9 @@ Route::middleware('auth')->group(function () {
     // Volunteer application routes (only for authenticated users)
     Route::get('/events/{event}/volunteer', [VolunteerController::class, 'create'])->name('events.volunteer.create');
     Route::post('/events/{event}/volunteer', [VolunteerController::class, 'store'])->name('events.volunteer.store');
+    
+    // Forum comments (authenticated users can comment)
+    Route::post('/forums/{forum}/comments', [CommentController::class, 'store'])->name('forums.comments.store');
     
     // NOTE: user-scoped resource routes for events were removed to avoid
     // colliding with the public events routes (which are named
@@ -101,4 +111,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Use admin-scoped controller for admin panel views
     Route::resource('events', \App\Http\Controllers\Admin\EventController::class);
+    
+    // --- ADMIN FORUM MANAGEMENT ---
+    Route::resource('forums', AdminForumController::class);
+    Route::get('/forums-comments', [AdminForumController::class, 'comments'])->name('forums.comments');
+    Route::post('/comments/{comment}/toggle-hidden', [CommentController::class, 'toggleHidden'])->name('comments.toggle-hidden');
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+    Route::post('/comments/{id}/restore', [CommentController::class, 'restore'])->name('comments.restore');
+    Route::delete('/comments/{id}/force-delete', [CommentController::class, 'forceDelete'])->name('comments.force-delete');
 });

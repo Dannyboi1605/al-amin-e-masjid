@@ -778,6 +778,7 @@
                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('about.*') ? 'active' : '' }}" href="{{ route('about.index') }}">Tentang Kami</a></li>
                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('prayer.*') ? 'active' : '' }}" href="{{ route('prayer.index') }}">Waktu Solat</a></li>
                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('announcements.*') ? 'active' : '' }}" href="{{ route('announcements.index.public') }}">Pengumuman</a></li>
+                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('forums.*') ? 'active' : '' }}" href="{{ route('forums.index') }}">Forum</a></li>
                     
                     {{-- Program Komuniti (with optional dropdown for future subpages) --}}
                     <li class="nav-item dropdown">

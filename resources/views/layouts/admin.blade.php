@@ -49,6 +49,7 @@
                 <li><a href="{{ route('admin.announcements.index') }}" class="admin-link">Announcements</a></li>
                 <li><a href="{{ route('admin.events.index') }}" class="admin-link">Events</a></li>
                 <li><a href="{{ route('admin.volunteers.index') }}" class="admin-link">Volunteers</a></li>
+                <li><a href="{{ route('admin.forums.index') }}" class="admin-link">Forums</a></li>
                 <li><a href="{{ route('admin.about.index') }}" class="admin-link">About Us Management</a></li>
                 <hr style="border-color: #495057;">
                 <li><a href="{{ route('homepage') }}" class="admin-link">Dashboard Utama</a></li>

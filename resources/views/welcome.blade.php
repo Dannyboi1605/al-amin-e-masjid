@@ -48,7 +48,16 @@
                 </div>
             </a>
             
-            <!-- Card 3: Donations -->
+            <!-- Card 3: Forum -->
+            <a href="{{ route('forums.index') }}" class="thumbnail-card">
+                <img src="https://images.unsplash.com/photo-1531545514256-b1400bc00f31?w=600" alt="Forum Discussion">
+                <div class="thumbnail-overlay">
+                    <h3 style="font-size: 1.5rem; font-weight: 600;">Forum Perbincangan</h3>
+                    <p>Berbincang dan berkongsi pandangan dengan komuniti</p>
+                </div>
+            </a>
+            
+            <!-- Card 4: Donations -->
             <a href="{{ route('donation.create') }}" class="thumbnail-card">
                 <img src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=600" alt="Online Donations">
                 <div class="thumbnail-overlay">

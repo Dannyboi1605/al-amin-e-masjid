@@ -39,6 +39,18 @@
                 </div>
             </div>
 
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Forums</h5>
+                            <p class="card-text">Urus forum perbincangan dan moderasi komen.</p>
+                            <a href="{{ route('admin.forums.index') }}" class="btn btn-sm btn-primary">Lihat Forums</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
